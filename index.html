@@ -1,555 +1,1126 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Design a Board Game for Language Learning</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        /* Custom styles for animations and aesthetics */
-        .fade-in-section {
-            opacity: 0;
-            transform: translateY(20px);
-            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-        }
-        .fade-in-section.is-visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        .checklist-item:hover .checklist-icon {
-            transform: scale(1.2);
-            box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
-        }
-        .checklist-item.completed p {
-            text-decoration: line-through;
-            opacity: 0.6;
-        }
-        .progress-bar-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 8px;
-            z-index: 50;
-            background-color: rgba(15, 23, 42, 0.5);
-        }
-        .progress-bar {
-            height: 100%;
-            width: 0%;
-            background: linear-gradient(90deg, #F59E0B, #EF4444); /* Amber to Red */
-            transition: width 0.1s linear;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Language-Learning Board Game — Project Guide & Progress Checks</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #9a3412;
+      --primary-light: #ea580c;
+      --primary-subtle: #ffedd5;
+      --secondary: #0d6efd;
+      --accent: #d97706;
+      --dark: #0f172a;
+      --dark-card: #1e293b;
+      --slate-50: #f8fafc;
+      --slate-100: #f1f5f9;
+      --slate-200: #e2e8f0;
+      --slate-300: #cbd5e1;
+      --slate-600: #475569;
+      --slate-700: #334155;
+      --slate-800: #1e293b;
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+      --shadow-lg: 0 20px 35px -10px rgba(0, 0, 0, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: var(--slate-50);
+      color: var(--slate-800);
+      line-height: 1.6;
+      padding-bottom: 80px;
+    }
+
+    header {
+      background: linear-gradient(135deg, #431407 0%, #9a3412 50%, #c2410c 100%);
+      color: #ffffff;
+      padding: 56px 24px 72px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    header::after {
+      content: "";
+      position: absolute;
+      top: 0; right: 0; bottom: 0; left: 0;
+      background: radial-gradient(circle at 85% 20%, rgba(255,255,255,0.12) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .container {
+      max-width: 1160px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    .badge-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.18);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      font-weight: 700;
+      line-height: 1.15;
+      margin-bottom: 16px;
+    }
+
+    .header-desc {
+      font-size: 1.125rem;
+      max-width: 780px;
+      color: rgba(255, 255, 255, 0.9);
+      margin-bottom: 28px;
+    }
+
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-top: 36px;
+    }
+
+    .stat-card {
+      background: rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 18px 20px;
+      border-radius: var(--radius-md);
+      color: #fff;
+    }
+
+    .stat-card .label {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      opacity: 0.85;
+      margin-bottom: 4px;
+    }
+
+    .stat-card .value {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.45rem;
+      font-weight: 700;
+    }
+
+    /* Quick Specs Grid */
+    .specs-section {
+      margin-top: -36px;
+      position: relative;
+      z-index: 10;
+      margin-bottom: 50px;
+    }
+
+    .specs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+      gap: 20px;
+    }
+
+    .spec-box {
+      background: #ffffff;
+      border: 1px solid var(--slate-200);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .spec-box h3 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .spec-box ul {
+      list-style: none;
+    }
+
+    .spec-box li {
+      position: relative;
+      padding-left: 20px;
+      margin-bottom: 8px;
+      font-size: 0.92rem;
+      color: var(--slate-700);
+    }
+
+    .spec-box li::before {
+      content: "•";
+      color: var(--primary-light);
+      position: absolute;
+      left: 4px;
+      font-weight: bold;
+    }
+
+    /* Speculative Grammar Callout */
+    .grammar-callout {
+      background: linear-gradient(135deg, #eff6ff 0%, #e0f2fe 100%);
+      border: 1px solid #bfdbfe;
+      border-radius: var(--radius-md);
+      padding: 24px;
+      margin-bottom: 48px;
+    }
+
+    .grammar-callout h3 {
+      color: #1e40af;
+      font-size: 1.15rem;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .grammar-callout p {
+      color: #1e3a8a;
+      font-size: 0.95rem;
+      margin-bottom: 12px;
+    }
+
+    .grammar-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .pill {
+      background: #ffffff;
+      border: 1px solid #93c5fd;
+      color: #1e40af;
+      font-family: monospace;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.88rem;
+      font-weight: 600;
+    }
+
+    /* Section Headers */
+    .section-title-wrap {
+      margin-bottom: 30px;
+      text-align: center;
+    }
+
+    .section-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--dark);
+    }
+
+    .section-subtitle {
+      color: var(--slate-600);
+      font-size: 1rem;
+      margin-top: 6px;
+    }
+
+    /* Timeline Navigation */
+    .timeline-nav {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 14px;
+      margin-bottom: 28px;
+      border-bottom: 1px solid var(--slate-200);
+    }
+
+    .timeline-btn {
+      flex: 0 0 auto;
+      background: #ffffff;
+      border: 1px solid var(--slate-200);
+      padding: 10px 18px;
+      border-radius: 999px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--slate-600);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .timeline-btn:hover {
+      background: var(--slate-100);
+      color: var(--dark);
+    }
+
+    .timeline-btn.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(15, 81, 50, 0.25);
+    }
+
+    .timeline-btn .pill-week {
+      font-size: 0.75rem;
+      padding: 2px 8px;
+      background: rgba(0,0,0,0.08);
+      border-radius: 999px;
+    }
+
+    .timeline-btn.active .pill-week {
+      background: rgba(255,255,255,0.25);
+    }
+
+    /* Checkpoint Card */
+    .checkpoint-card {
+      background: #ffffff;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--slate-200);
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+      margin-bottom: 30px;
+    }
+
+    .checkpoint-header {
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+      padding: 28px 32px;
+      border-bottom: 1px solid var(--slate-200);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .checkpoint-title-grp h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.45rem;
+      color: var(--dark);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .meeting-badge {
+      background: var(--primary-subtle);
+      color: var(--primary);
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .checkpoint-header p {
+      color: var(--slate-600);
+      font-size: 0.95rem;
+      margin-top: 4px;
+    }
+
+    .questions-box {
+      margin: 24px 32px 10px;
+      background: #fefce8;
+      border: 1px solid #fef08a;
+      border-radius: var(--radius-md);
+      padding: 18px 22px;
+    }
+
+    .questions-box h4 {
+      color: #854d0e;
+      font-size: 0.88rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .questions-box ul {
+      margin-left: 20px;
+      color: #713f12;
+      font-size: 0.92rem;
+    }
+
+    .questions-box li {
+      margin-bottom: 4px;
+    }
+
+    /* 3-Column Action Workflow */
+    .workflow-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+      gap: 20px;
+      padding: 24px 32px 32px;
+    }
+
+    .action-col {
+      border-radius: var(--radius-md);
+      padding: 22px;
+      border: 1px solid transparent;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .col-before {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+    }
+
+    .col-during {
+      background: #f0fdf4;
+      border-color: #bbf7d0;
+    }
+
+    .col-next {
+      background: #eff6ff;
+      border-color: #bfdbfe;
+    }
+
+    .col-title {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .col-before .col-title { color: var(--slate-800); }
+    .col-during .col-title { color: #166534; }
+    .col-next .col-title { color: #1e40af; }
+
+    .action-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      flex-grow: 1;
+    }
+
+    .action-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 0.9rem;
+      line-height: 1.45;
+      color: var(--slate-700);
+    }
+
+    .action-item input[type="checkbox"] {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border: 2px solid var(--slate-300);
+      border-radius: 4px;
+
+      cursor: pointer;
+      margin-top: 2px;
+      position: relative;
+      flex-shrink: 0;
+      background: #ffffff;
+      transition: all 0.15s ease;
+    }
+
+    .action-item input[type="checkbox"]:checked {
+      background-color: var(--primary);
+      border-color: var(--primary);
+    }
+
+    .action-item input[type="checkbox"]:checked::after {
+      content: "✔";
+      font-size: 11px;
+      color: white;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .action-item input[type="checkbox"]:checked + label {
+      text-decoration: line-through;
+      color: var(--slate-600);
+      opacity: 0.8;
+    }
+
+    /* Print & Action Controls */
+    .action-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid var(--slate-200);
+    }
+
+    .btn-secondary {
+      background: #ffffff;
+      border: 1px solid var(--slate-300);
+      color: var(--slate-700);
+      padding: 8px 18px;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-secondary:hover {
+      background: var(--slate-100);
+    }
+
+    .progress-track {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--slate-600);
+    }
+
+    .progress-bar-bg {
+      width: 160px;
+      height: 8px;
+      background: var(--slate-200);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--primary-light);
+      transition: width 0.3s ease;
+    }
+
+    input[type="checkbox"]:focus-visible, button:focus-visible {
+      outline: 3px solid var(--secondary);
+      outline-offset: 3px;
+    }
+    .action-item label { cursor: pointer; }
+    @media print {
+      header { padding: 20px; color: #000; background: #fff; }
+      .header-desc, .stat-card { color: #000; }
+      .timeline-nav, .action-bar { display: none; }
+      .specs-section { margin-top: 20px; }
+      .workflow-grid { display: block; }
+      .action-col { margin-bottom: 12px; break-inside: avoid; }
+      .checkpoint-card { box-shadow: none; }
+    }
+    .research-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
+    .research-grid h4 { color: var(--primary); margin-bottom: 8px; }
+    @media (max-width: 480px) {
+      .specs-grid, .workflow-grid, .research-grid { grid-template-columns: 1fr; }
+      .checkpoint-title-grp h2, .col-title { flex-wrap: wrap; gap: 8px; }
+    }
+    /* Responsive */
+    @media (max-width: 768px) {
+      .checkpoint-header {
+        padding: 20px;
+      }
+      .questions-box {
+        margin: 16px 20px 0;
+      }
+      .workflow-grid {
+        padding: 20px;
+      }
+    }
+
+    .honesty-hub { margin-top: 28px; padding-top: 24px; border-top: 2px solid #93c5fd; }
+    .honesty-hub > h3 { color: #854d0e; background: #fef3c7; padding: 14px; border-radius: 8px; }
+    .honesty-hub details { background: #fff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 16px; margin: 14px 0; }
+    .honesty-hub summary { cursor: pointer; font-weight: 700; color: #1e40af; }
+    .honesty-hub details p { margin-top: 14px; }
+    .honesty-hub ul { padding-left: 22px; color: #1e3a8a; font-size: .95rem; }
+    .honesty-hub li { margin: 10px 0; }
+    .honesty-table-wrap { overflow-x: auto; margin: 16px 0; }
+    .honesty-table { width: 100%; border-collapse: collapse; font-size: .92rem; }
+    .honesty-table th, .honesty-table td { padding: 12px; text-align: left; vertical-align: top; border-bottom: 1px solid #bfdbfe; color: #1e3a8a; }
+    .honesty-table th { background: #eff6ff; }
+    .honesty-table td:first-child { min-width: 140px; }
+    .honesty-check { background: #fef3c7; padding: 16px; border-radius: 8px; }
+    summary:focus-visible { outline: 3px solid var(--secondary); outline-offset: 3px; }
+  </style>
 </head>
-<body class="bg-slate-900 text-slate-200 antialiased">
+<body>
 
-    <!-- Animated Progress Tracker -->
-    <div class="progress-bar-container shadow-lg">
-        <div id="progressBar" class="progress-bar rounded-r-full"></div>
+  <!-- HEADER -->
+  <header>
+    <div class="container">
+      <div class="badge-tag">Prep IS English Project • Learn Through Play</div>
+      <h1>Design a Board Game That Improves Second Language Learning</h1>
+      <p class="header-desc">
+        What if a game helped learners practise English and enjoy the challenge? Choose one language-learning difficulty, research existing games, and create your own physical or digital board game. Explain how the rules help players practise the language.
+      </p>
+
+      <div class="stats-bar">
+        <div class="stat-card">
+          <div class="label">What You Will Make</div>
+          <div class="value">Report 50% • Game 25% • Talk 25%</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Your Learning Focus</div>
+          <div class="value">One Clear Language Goal</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Presentation</div>
+          <div class="value">5 – 10 Minutes</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Project Checks</div>
+          <div class="value">5 Progress Checks</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- SPECS & RULES -->
+    <section class="specs-section">
+      <div class="specs-grid">
+        <div class="spec-box">
+          <h3>📌 What to Hand In</h3>
+          <ul>
+            <li><strong>Report — 50%:</strong> Explain the learning difficulty, games you researched, your design choices, and what you changed after testing. Include rules and a source list.</li>
+            <li><strong>Finished game — 25%:</strong> Make a playable physical or digital board game, with all materials, clear rules, and a way to check answers.</li>
+            <li><strong>Presentation — 25%:</strong> Give a 5–10 minute talk. Explain the learning goal and demonstrate a short example turn.</li>
+            <li><strong>Your own work:</strong> Create your own game content and design. Credit the games, ideas, facts, and images that inspired you.</li>
+          </ul>
+        </div>
+        <div class="spec-box">
+          <h3>🎲 Choose Your Game Format</h3>
+          <ul>
+            <li><strong>Physical game:</strong> Use paper, cardboard, cards, dice, counters, or other simple materials. Make all the pieces players need.</li>
+            <li><strong>Digital board game:</strong> Use a virtual board, digital cards, or another tool that clearly shows how to play. Test that players can use it.</li>
+            <li><strong>Rules and answer support:</strong> Include a rule sheet and an answer key or guidance for checking open answers.</li>
+            <li>Simple tools are enough. The game should be clear, enjoyable, and connected to language practice.</li>
+          </ul>
+        </div>
+        <div class="spec-box">
+          <h3>🎯 Define Your Learning Goal</h3>
+          <ul>
+            <li><strong>Choose one difficulty:</strong> For example, remembering words, making accurate sentences, or speaking with more confidence.</li>
+            <li><strong>Name your players:</strong> Give their age group, English level, and the number of players.</li>
+            <li><strong>State the aim:</strong> Explain what players will practise and how the game gives them repeated chances to use it.</li>
+            <li><strong>Link other subjects if useful:</strong> You may include history, science, art, or another subject. Explain how it supports your learning goal.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="spec-box" style="margin-bottom:32px">
+      <h3>🧩 Start with These Design Questions</h3>
+      <div class="research-grid">
+        <div><h4>1. What happens on a turn?</h4><p>Does a player roll dice, move, draw a card, describe something, or make a sentence? Write the steps in order. Show when the player uses English.</p></div>
+        <div><h4>2. Where does the learning happen?</h4><p>What words or language structures will players practise? How will they check answers and learn from mistakes? Moving a counter alone is not language practice.</p></div>
+        <div><h4>3. Why is it fun and fair?</h4><p>Will players use choices, luck, teamwork, or strategy? How will everyone get a chance to practise? What happens if a player needs help?</p></div>
+        <div><h4>4. How does it end?</h4><p>Set a clear finishing rule, score system, and way to handle a tie. State an estimated playing time. Players should know what they are trying to achieve.</p></div>
+      </div>
+      <p style="margin-top:14px"><strong>Research tip:</strong> Start by comparing 2–3 existing games, as a useful target. Explain how each works, what makes it enjoyable, and how it could support language learning. Use original rulebooks or official game information where possible. Save the creator or publisher, title, date, and link.</p>
+      <p style="margin-top:12px"><strong>Show your original contribution:</strong> Explain the idea you borrowed, name its source, and describe what you changed. A new title or different colours alone do not show a new learning design.</p>
+    </section>
+
+    <section class="spec-box" style="margin-bottom:32px">
+      <h3>📝 A Rule Sheet Players Can Follow</h3>
+      <p>Include: <strong>Game name → Age and English level → Learning aim → Player numbers and estimated time → Materials → Set-up → Steps of a turn → Answer checking and help → Scoring → Ending and ties.</strong></p>
+      <p style="margin-top:12px"><strong>Example turn — a model to adapt:</strong> Draw a word card. Make a sentence using the word. Check the example answer or ask the checker to use the answer guide. If your sentence shows the meaning clearly, gain one point. If it needs a change, read the help card and try again.</p>
+      <p style="margin-top:12px"><strong>Open answers:</strong> Speaking tasks may have several correct answers. Give examples and simple checking criteria instead of pretending there is only one answer. For example: “The meaning is clear, the target word is used correctly, and the answer is a complete sentence.”</p>
+      <p style="margin-top:12px"><strong>Report plan:</strong> Title and your name → Introduction and learning difficulty → Research into existing games → Your players and learning goal → Game design and rules → Testing and improvements → Conclusion → Source list.</p>
+    </section>
+
+    <section class="spec-box" style="margin-bottom:32px">
+      <h3>🔧 Test, Notice, Improve</h3>
+      <p>A <strong>prototype</strong> is an early, simple version of your game. Test it before spending time on decoration. First play through the turns yourself. Then, if your teacher allows it, ask suitable players to try it. They can give feedback; the design and report remain your work.</p>
+      <p style="margin-top:12px"><strong>Record:</strong> the test date, number of players, how long it took, a rule that caused confusion, examples of language practice, and the changes you made. Use anonymous labels such as Player A rather than personal details.</p>
+      <p style="margin-top:12px"><strong>Simple testing note:</strong> “Players were unsure how to check a sentence. I added an example answer and a checking guide. In the next test, they could check answers with less help.”</p>
+      <p style="margin-top:12px"><strong>Be honest about results:</strong> A short test can show that players understand the rules and practise English. It does not prove that their English level has improved. Explain what you observed and what would need more testing.</p>
+    </section>
+
+    <section class="grammar-callout">
+      <h3>💡 Useful Language: Explaining Your Game and Choices</h3>
+      <p>Use short commands for rules, clear linking words for the order of play, and reasons to explain your design decisions.</p>
+      <div class="grammar-pills">
+        <span class="pill">The aim of the game is to...</span>
+        <span class="pill">This game is designed for...</span>
+        <span class="pill">First,... Next,... Finally,...</span>
+        <span class="pill">On your turn, draw / move / explain...</span>
+        <span class="pill">If you answer correctly, you...</span>
+        <span class="pill">This task helps players practise...</span>
+      </div>
+      <p style="margin-top:16px"><strong>Rules:</strong> “Place the cards face down. Take turns drawing a card. If you are unsure, use the help card.” Use <em>must</em> for a requirement and <em>can</em> for an allowed choice.</p>
+      <p><strong>Explain your choices:</strong> “I chose this task because learners need to use words in context.” “Unlike [game], my game asks players to...” “I was inspired by [game / creator], but I changed...”</p>
+      <p><strong>Explain testing:</strong> “During the test, I noticed that...” “Players found ... difficult, so I...” “After feedback, I changed...” “This suggests that..., but more testing is needed to...”</p>
+
+      <div class="honesty-hub">
+        <h3>🛡️ Academic Honesty: Show What Is Yours and What Comes from a Source</h3>
+        <p><strong>Academic honesty means being clear about whose words, ideas, and work you use.</strong> Your project should show your understanding. Give credit for borrowed ideas, facts, exact words, pictures, charts, and videos. A source note tells the reader where information came from.</p>
+        <p><strong>A key rule:</strong> Changing a few words, translating a text, or turning a quotation into reported speech does not make the idea yours. You still need to name the source. A source list at the end is not enough on its own: add a source note beside the borrowed information too.</p>
+
+        <details open>
+          <summary>✍️ Quote, paraphrase, or summarise: which should I use?</summary>
+          <p><strong>Practice only:</strong> All examples here use an invented author, Alex Green, and an invented text from 2026. They show the method. Do not use this author or text as a real source in your project.</p>
+          <p><strong>Original practice sentence:</strong> “Language games can give learners repeated chances to use new words.”</p>
+          <div class="honesty-table-wrap">
+            <table class="honesty-table">
+              <thead><tr><th>Method</th><th>How to do it honestly</th><th>Model and useful language</th></tr></thead>
+              <tbody>
+                <tr><td><strong>Quote</strong><br>Use exact words.</td><td>Use a short quotation when the wording matters. Copy it accurately, use quotation marks, and name the author and source. Add a page number or video timestamp when available.</td><td>Green (2026) writes, “Language games can give learners repeated chances to use new words.”<br><em>According to [author] ([year]), “...”</em></td></tr>
+                <tr><td><strong>Paraphrase</strong><br>Explain an idea in your own words.</td><td>Read until you understand. Look away from the original and explain the idea using your own sentence structure. Then check that the meaning is accurate and add the source. Replacing a few words with synonyms is not enough.</td><td>Green (2026) explains that games can help learners practise new vocabulary several times.<br><em>[Author] ([year]) explains that...</em><br><em>According to [author] ([year]),...</em></td></tr>
+                <tr><td><strong>Summarise</strong><br>Give only the main point.</td><td>Make the original idea much shorter. Leave out small details, keep the main meaning, and name the source. Do not add your opinion as if it came from the author.</td><td>Green (2026) discusses vocabulary practice through games.<br><em>The main point of [title] is that...</em><br><em>[Author] ([year]) focuses on...</em></td></tr>
+                <tr><td><strong>Report someone's words</strong></td><td>Say who spoke and where you found the statement. Change pronouns and tenses where needed. Keep the meaning and credit the interview, article, or video. Do not use quotation marks for wording you have changed.</td><td><em>In an interview with [publication] ([year]), [speaker] said that...</em><br><em>[Speaker] told [interviewer] that...</em></td></tr>
+                <tr><td><strong>Translate a source</strong></td><td>You may explain an idea from another language in your own English. Credit the original source. If you translate exact words as a quotation, label it “my translation”.</td><td><em>According to [author] ([year]),...</em><br><em>[Author] writes, “...” (my translation; [year], p. [page]).</em></td></tr>
+                <tr><td><strong>Combine sources</strong></td><td>Compare ideas from two sources and name both. Make it clear which idea comes from each source and which conclusion is yours.</td><td><em>[Author A] ([year]) argues that..., while [Author B] ([year]) suggests...</em><br><em>Together, these ideas suggest... In my view,...</em></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p><strong>Add your own thinking:</strong> Green (2026) explains that games can help learners practise new vocabulary several times. <em>In my view, this supports including several chances to use each word in my game.</em> The first sentence credits the source. The second clearly introduces your response.</p>
+        </details>
+
+        <details>
+          <summary>📚 Keep useful source notes</summary>
+          <ul>
+            <li>When you research, save the author or organisation, title, date, link, and any useful page number or video timestamp.</li>
+            <li>Keep exact quotations in quotation marks in your notes. Put your own notes beside them so you can tell them apart later.</li>
+            <li>Use a short source note in the report, such as <em>(Author, year)</em>. For an organisation's work, use its name. If no date is given, use <em>n.d.</em> (“no date”). Follow any format your teacher gives you.</li>
+            <li>At the end, list full source details. A simple web-source pattern is: <em>Author or organisation. (Year or n.d.). Title. Website name. URL.</em></li>
+            <li>Match every source note to an entry in your source list. Use sources you have actually read or watched. Never invent an author, quotation, date, or link.</li>
+          </ul>
+        </details>
+
+        <details>
+          <summary>🖼️ Pictures, charts, videos, and help from others</summary>
+          <ul>
+            <li>Add credit beside a borrowed image, chart, or clip, and include the full source in your source list. For example: <em>Image: [creator], [website], [year].</em></li>
+            <li>If you make a chart using someone else's data, write <em>Chart by me; data from [source] ([year]).</em></li>
+            <li>Crediting an image does not automatically give you permission to reuse it. Use your own images or material that allows reuse, and follow its conditions.</li>
+            <li>For your own photos or drawings, you can write <em>Photo/drawing by me.</em> You do not need a research source for your own opinions or widely known facts.</li>
+            <li>Follow your teacher's rules about outside help and AI. If help is allowed, explain what help you used. Check facts against real sources and make sure you understand and can explain your final work.</li>
+          </ul>
+        </details>
+
+        <p class="honesty-check"><strong>✅ Before you hand in:</strong> Are exact words in quotation marks? Are paraphrases truly in your own words? Are borrowed ideas and visuals credited beside them? Does every source note match the source list? Can you explain what you wrote?</p>
+      </div>
+    </section>
+
+    <!-- SECTION TITLE -->
+    <div class="section-title-wrap">
+      <h2 class="section-title">Your Project, Step by Step</h2>
+      <p class="section-subtitle">Use the five checks to build your project. The tabs show the week for each check, the final hand-in, and the presentation. Confirm the exact dates with your teacher. Tick a task only when it is finished.</p>
     </div>
 
-    <div class="container mx-auto px-4 py-16 sm:py-24">
-
-        <!-- Header Section -->
-        <header class="text-center mb-16 fade-in-section">
-            <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-red-500 pb-3">
-                Design a Board Game
-            </h1>
-            <p class="text-lg sm:text-xl text-slate-400 max-w-3xl mx-auto mt-4">
-                A project guide to creating a fun and effective board game for second language learning. Let's make learning an adventure!
-            </p>
-        </header>
-
-        <!-- Main Content - Project Steps -->
-        <main class="space-y-12">
-
-            <!-- Step 1 Card -->
-            <section id="step-1" class="fade-in-section p-8 bg-slate-800/50 rounded-2xl shadow-2xl border border-slate-700 backdrop-blur-sm transition-all duration-300 hover:transform hover:-translate-y-2 hover:shadow-[0_0_30px_rgba(245,158,11,0.5)]">
-                <div class="flex items-center mb-6">
-                    <div class="flex-shrink-0 w-12 h-12 rounded-full bg-amber-500 flex items-center justify-center text-xl font-bold shadow-lg">1</div>
-                    <h2 class="ml-4 text-2xl sm:text-3xl font-bold text-amber-300">First Check: Identify the Challenge</h2>
-                </div>
-                
-                <div class="grid md:grid-cols-2 gap-8">
-                    <div>
-                        <h3 class="font-semibold text-lg text-slate-100 mb-3 flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2 text-amber-400"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-                            Your Task
-                        </h3>
-                        <ul class="space-y-3">
-                           <li class="checklist-item flex items-start cursor-pointer group" onclick="toggleCheckbox(this)">
-                               <div class="checklist-icon mt-1 flex-shrink-0 w-6 h-6 rounded-full border-2 border-slate-500 bg-slate-700 flex items-center justify-center transition-all duration-300">
-                                   <svg class="w-4 h-4 text-amber-300 opacity-0 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
-                               </div>
-                               <p class="ml-4 text-slate-300">Brainstorm challenges in learning a second language (e.g., vocabulary, grammar, speaking confidence).</p>
-                           </li>
-                           <li class="checklist-item flex items-start cursor-pointer group" onclick="toggleCheckbox(this)">
-                               <div class="checklist-icon mt-1 flex-shrink-0 w-6 h-6 rounded-full border-2 border-slate-500 bg-slate-700 flex items-center justify-center transition-all duration-300">
-                                   <svg class="w-4 h-4 text-amber-300 opacity-0 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
-                               </div>
-                               <p class="ml-4 text-slate-300">Focus on one specific area or challenge your game will address.</p>
-                           </li>
-                           <li class="checklist-item flex items-start cursor-pointer group" onclick="toggleCheckbox(this)">
-                               <div class="checklist-icon mt-1 flex-shrink-0 w-6 h-6 rounded-full border-2 border-slate-500 bg-slate-700 flex items-center justify-center transition-all duration-300">
-                                   <svg class="w-4 h-4 text-amber-300 opacity-0 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
-                               </div>
-                               <p class="ml-4 text-slate-300">Come with initial ideas for a game that could tackle this problem.</p>
-                           </li>
-                        </ul>
-                    </div>
-                    <div class="bg-slate-800 p-6 rounded-lg border border-slate-700">
-                        <h3 class="font-semibold text-lg text-slate-100 mb-3 flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2 text-amber-400"><path d="m9 11 3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
-                            Expectations
-                        </h3>
-                        <p class="text-slate-400">We will finalize the specific language-learning challenge your game will solve, ensuring your project has a clear and focused educational goal.</p>
-                    </div>
-                </div>
-            </section>
-
-            <!-- NEW: Game Design Kick-starter Card -->
-            <section id="game-design-prep" class="fade-in-section p-8 bg-slate-800/50 rounded-2xl shadow-2xl border border-slate-700 backdrop-blur-sm">
-                <div class="flex items-center mb-6">
-                    <div class="flex-shrink-0 w-12 h-12 rounded-full bg-indigo-500 flex items-center justify-center shadow-lg">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0L12 2.69z"/><path d="m13.21 15.39 1.42-1.42c.53-.53.53-1.38 0-1.92L12 9.5l-2.63 2.55c-.53.53-.53 1.38 0 1.92l1.42 1.42c.53.53 1.38.53 1.92 0Z"/></svg>
-                    </div>
-                    <h2 class="ml-4 text-2xl sm:text-3xl font-bold text-indigo-300">Game Design Kick-starter</h2>
-                </div>
-                <p class="text-slate-400 mb-6">Before you start researching other games, think deeply about your own concept. Answering these questions will help you create a strong outline for your core game mechanics.</p>
-                <div class="space-y-4 text-slate-300">
-                    <div class="flex items-start space-x-3">
-                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0 mt-1 text-indigo-400"><path d="M12 22a10 10 0 1 1 0-20 10 10 0 0 1 0 20Z"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-                        <div>
-                            <h4 class="font-semibold text-indigo-200">The Core Loop (Gameplay):</h4>
-                            <p class="text-slate-400">What does a player do on their turn? (e.g., Roll dice and move? Draw a card? Guess a word?) How does a player make progress toward winning?</p>
-                        </div>
-                    </div>
-                    <div class="flex items-start space-x-3">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0 mt-1 text-indigo-400"><path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
-                        <div>
-                            <h4 class="font-semibold text-indigo-200">The Learning Goal (Education):</h4>
-                            <p class="text-slate-400">How will your game directly address the language challenge you chose? If the challenge is vocabulary, how do players learn new words? If it's grammar, how do they practice it?</p>
-                        </div>
-                    </div>
-                     <div class="flex items-start space-x-3">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0 mt-1 text-indigo-400"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="m10 10 4 4"/><path d="m14 10-4 4"/></svg>
-                        <div>
-                            <h4 class="font-semibold text-indigo-200">The Fun Factor (Engagement):</h4>
-                            <p class="text-slate-400">Why would someone want to play your game again? Is there an element of luck? Strategy? Teamwork? A funny consequence for a wrong answer?</p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Step 2 Card -->
-            <section id="step-2" class="fade-in-section p-8 bg-slate-800/50 rounded-2xl shadow-2xl border border-slate-700 backdrop-blur-sm transition-all duration-300 hover:transform hover:-translate-y-2 hover:shadow-[0_0_30px_rgba(239,68,68,0.5)]">
-                 <div class="flex items-center mb-6">
-                    <div class="flex-shrink-0 w-12 h-12 rounded-full bg-red-500 flex items-center justify-center text-xl font-bold shadow-lg">2</div>
-                    <h2 class="ml-4 text-2xl sm:text-3xl font-bold text-red-300">Second Check: Research & Core Game Concept</h2>
-                </div>
-                
-                 <div class="grid md:grid-cols-2 gap-8">
-                    <div>
-                        <h3 class="font-semibold text-lg text-slate-100 mb-3 flex items-center">
-                           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2 text-red-400"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-                           Your Task
-                        </h3>
-                        <ul class="space-y-3">
-                           <li class="checklist-item flex items-start cursor-pointer group" onclick="toggleCheckbox(this)">
-                               <div class="checklist-icon mt-1 flex-shrink-0 w-6 h-6 rounded-full border-2 border-slate-500 bg-slate-700 flex items-center justify-center transition-all duration-300">
-                                   <svg class="w-4 h-4 text-red-300 opacity-0 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
-                               </div>
-                               <p class="ml-4 text-slate-300">Research 2-3 existing board games that could be applied to learning.</p>
-                           </li>
-                           <li class="checklist-item flex items-start cursor-pointer group" onclick="toggleCheckbox(this)">
-                               <div class="checklist-icon mt-1 flex-shrink-0 w-6 h-6 rounded-full border-2 border-slate-500 bg-slate-700 flex items-center justify-center transition-all duration-300">
-                                   <svg class="w-4 h-4 text-red-300 opacity-0 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
-                               </div>
-                               <p class="ml-4 text-slate-300">Analyze their mechanics: What makes them fun? How do players win?</p>
-                           </li>
-                           <li class="checklist-item flex items-start cursor-pointer group" onclick="toggleCheckbox(this)">
-                               <div class="checklist-icon mt-1 flex-shrink-0 w-6 h-6 rounded-full border-2 border-slate-500 bg-slate-700 flex items-center justify-center transition-all duration-300">
-                                   <svg class="w-4 h-4 text-red-300 opacity-0 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
-                               </div>
-                               <p class="ml-4 text-slate-300">Develop a core concept for your own game and create a draft outline for your report.</p>
-                           </li>
-                        </ul>
-                    </div>
-                    <div class="bg-slate-800 p-6 rounded-lg border border-slate-700">
-                        <h3 class="font-semibold text-lg text-slate-100 mb-3 flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2 text-red-400"><path d="m9 11 3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
-                            Expectations
-                        </h3>
-                        <p class="text-slate-400">You will present your research and a solid concept for your game. We'll discuss how you can transform your inspiration into a truly original idea.</p>
-                    </div>
-                </div>
-            </section>
-            
-            <!-- Step 3 Card -->
-            <section id="step-3" class="fade-in-section p-8 bg-slate-800/50 rounded-2xl shadow-2xl border border-slate-700 backdrop-blur-sm transition-all duration-300 hover:transform hover:-translate-y-2 hover:shadow-[0_0_30px_rgba(217,70,239,0.5)]">
-                 <div class="flex items-center mb-6">
-                    <div class="flex-shrink-0 w-12 h-12 rounded-full bg-fuchsia-500 flex items-center justify-center text-xl font-bold shadow-lg">3</div>
-                    <h2 class="ml-4 text-2xl sm:text-3xl font-bold text-fuchsia-300">Third Check: Rough Draft & Game Prototype</h2>
-                </div>
-                
-                 <div class="grid md:grid-cols-2 gap-8">
-                    <div>
-                        <h3 class="font-semibold text-lg text-slate-100 mb-3 flex items-center">
-                           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2 text-fuchsia-400"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-                           Your Task
-                        </h3>
-                        <ul class="space-y-3">
-                           <li class="checklist-item flex items-start cursor-pointer group" onclick="toggleCheckbox(this)">
-                               <div class="checklist-icon mt-1 flex-shrink-0 w-6 h-6 rounded-full border-2 border-slate-500 bg-slate-700 flex items-center justify-center transition-all duration-300">
-                                   <svg class="w-4 h-4 text-fuchsia-300 opacity-0 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
-                               </div>
-                               <p class="ml-4 text-slate-300">Write a full rough draft of your report and game rulebook.</p>
-                           </li>
-                           <li class="checklist-item flex items-start cursor-pointer group" onclick="toggleCheckbox(this)">
-                               <div class="checklist-icon mt-1 flex-shrink-0 w-6 h-6 rounded-full border-2 border-slate-500 bg-slate-700 flex items-center justify-center transition-all duration-300">
-                                   <svg class="w-4 h-4 text-fuchsia-300 opacity-0 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
-                               </div>
-                               <p class="ml-4 text-slate-300">Create a physical or digital prototype of your game (board, cards, pieces).</p>
-                           </li>
-                           <li class="checklist-item flex items-start cursor-pointer group" onclick="toggleCheckbox(this)">
-                               <div class="checklist-icon mt-1 flex-shrink-0 w-6 h-6 rounded-full border-2 border-slate-500 bg-slate-700 flex items-center justify-center transition-all duration-300">
-                                   <svg class="w-4 h-4 text-fuchsia-300 opacity-0 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
-                               </div>
-                               <p class="ml-4 text-slate-300">Your rulebook must define the age group, aims, rules, and components.</p>
-                           </li>
-                        </ul>
-                    </div>
-                    <div class="bg-slate-800 p-6 rounded-lg border border-slate-700">
-                        <h3 class="font-semibold text-lg text-slate-100 mb-3 flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2 text-fuchsia-400"><path d="m9 11 3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
-                            Expectations
-                        </h3>
-                        <p class="text-slate-400">You will present a playable prototype and a complete draft. We will review the rules for clarity and provide feedback to improve the gameplay and learning value.</p>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Step 4 Card -->
-            <section id="step-4" class="fade-in-section p-8 bg-slate-800/50 rounded-2xl shadow-2xl border border-slate-700 backdrop-blur-sm transition-all duration-300 hover:transform hover:-translate-y-2 hover:shadow-[0_0_30px_rgba(168,85,247,0.5)]">
-                 <div class="flex items-center mb-6">
-                    <div class="flex-shrink-0 w-12 h-12 rounded-full bg-purple-500 flex items-center justify-center text-xl font-bold shadow-lg">4</div>
-                    <h2 class="ml-4 text-2xl sm:text-3xl font-bold text-purple-300">Fourth Check: Final Report & Presentation Plan</h2>
-                </div>
-                
-                 <div class="grid md:grid-cols-2 gap-8">
-                    <div>
-                        <h3 class="font-semibold text-lg text-slate-100 mb-3 flex items-center">
-                           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2 text-purple-400"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-                           Your Task
-                        </h3>
-                        <ul class="space-y-3">
-                           <li class="checklist-item flex items-start cursor-pointer group" onclick="toggleCheckbox(this)">
-                               <div class="checklist-icon mt-1 flex-shrink-0 w-6 h-6 rounded-full border-2 border-slate-500 bg-slate-700 flex items-center justify-center transition-all duration-300">
-                                   <svg class="w-4 h-4 text-purple-300 opacity-0 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
-                               </div>
-                               <p class="ml-4 text-slate-300">Revise and edit your report and rulebook into a final version to be handed in.</p>
-                           </li>
-                           <li class="checklist-item flex items-start cursor-pointer group" onclick="toggleCheckbox(this)">
-                               <div class="checklist-icon mt-1 flex-shrink-0 w-6 h-6 rounded-full border-2 border-slate-500 bg-slate-700 flex items-center justify-center transition-all duration-300">
-                                   <svg class="w-4 h-4 text-purple-300 opacity-0 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
-                               </div>
-                               <p class="ml-4 text-slate-300">Create a storyboard or plan for your 10-15 minute presentation.</p>
-                           </li>
-                           <li class="checklist-item flex items-start cursor-pointer group" onclick="toggleCheckbox(this)">
-                               <div class="checklist-icon mt-1 flex-shrink-0 w-6 h-6 rounded-full border-2 border-slate-500 bg-slate-700 flex items-center justify-center transition-all duration-300">
-                                   <svg class="w-4 h-4 text-purple-300 opacity-0 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
-                               </div>
-                               <p class="ml-4 text-slate-300">Plan how you will demonstrate your game to the class.</p>
-                           </li>
-                        </ul>
-                    </div>
-                    <div class="bg-slate-800 p-6 rounded-lg border border-slate-700">
-                        <h3 class="font-semibold text-lg text-slate-100 mb-3 flex items-center">
-                           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2 text-purple-400"><path d="m9 11 3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
-                            Expectations
-                        </h3>
-                        <p class="text-slate-400">I will collect your final written report. We will then refine your presentation plan and schedule your final demonstration.</p>
-                    </div>
-                </div>
-            </section>
-            
-            <!-- Step 5 Card -->
-            <section id="step-5" class="fade-in-section p-8 bg-slate-800/50 rounded-2xl shadow-2xl border border-slate-700 backdrop-blur-sm transition-all duration-300 hover:transform hover:-translate-y-2 hover:shadow-[0_0_30px_rgba(34,211,238,0.5)]">
-                 <div class="flex items-center mb-6">
-                    <div class="flex-shrink-0 w-12 h-12 rounded-full bg-cyan-500 flex items-center justify-center text-xl font-bold shadow-lg">5</div>
-                    <h2 class="ml-4 text-2xl sm:text-3xl font-bold text-cyan-300">Fifth Check: Final Presentation & Game Demo</h2>
-                </div>
-                
-                 <div class="grid md:grid-cols-2 gap-8">
-                    <div>
-                        <h3 class="font-semibold text-lg text-slate-100 mb-3 flex items-center">
-                           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2 text-cyan-400"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-                           Your Task
-                        </h3>
-                        <ul class="space-y-3">
-                           <li class="checklist-item flex items-start cursor-pointer group" onclick="toggleCheckbox(this)">
-                               <div class="checklist-icon mt-1 flex-shrink-0 w-6 h-6 rounded-full border-2 border-slate-500 bg-slate-700 flex items-center justify-center transition-all duration-300">
-                                   <svg class="w-4 h-4 text-cyan-300 opacity-0 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
-                               </div>
-                               <p class="ml-4 text-slate-300">Practice your 10-15 minute presentation and game demonstration.</p>
-                           </li>
-                           <li class="checklist-item flex items-start cursor-pointer group" onclick="toggleCheckbox(this)">
-                               <div class="checklist-icon mt-1 flex-shrink-0 w-6 h-6 rounded-full border-2 border-slate-500 bg-slate-700 flex items-center justify-center transition-all duration-300">
-                                   <svg class="w-4 h-4 text-cyan-300 opacity-0 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
-                               </div>
-                               <p class="ml-4 text-slate-300">Have your final game prototype (the Product) ready to display.</p>
-                           </li>
-                           <li class="checklist-item flex items-start cursor-pointer group" onclick="toggleCheckbox(this)">
-                               <div class="checklist-icon mt-1 flex-shrink-0 w-6 h-6 rounded-full border-2 border-slate-500 bg-slate-700 flex items-center justify-center transition-all duration-300">
-                                   <svg class="w-4 h-4 text-cyan-300 opacity-0 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
-                               </div>
-                               <p class="ml-4 text-slate-300">Present your work and confidently demonstrate how your game is played.</p>
-                           </li>
-                        </ul>
-                    </div>
-                    <div class="bg-slate-800 p-6 rounded-lg border border-slate-700">
-                        <h3 class="font-semibold text-lg text-slate-100 mb-3 flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2 text-cyan-400"><path d="m9 11 3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
-                            Expectations
-                        </h3>
-                        <p class="text-slate-400">A clear, engaging presentation that explains your design process and a fun demonstration that shows how your game makes language learning effective.</p>
-                    </div>
-                </div>
-            </section>
-            
-            <!-- Detailed Rubric Card -->
-            <section id="rubric" class="fade-in-section p-8 bg-slate-800/50 rounded-2xl shadow-2xl border border-slate-700 backdrop-blur-sm">
-                <div class="flex items-center mb-6">
-                    <div class="flex-shrink-0 w-12 h-12 rounded-full bg-slate-500 flex items-center justify-center shadow-lg">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white"><path d="M12 20h.01"></path><path d="M12 14h.01"></path><path d="M12 8h.01"></path><path d="M12 2h.01"></path><path d="M20 12h.01"></path><path d="M14 12h.01"></path><path d="M8 12h.01"></path><path d="M2 12h.01"></path><path d="M22 12h.01"></path><path d="M12 18V6"></path><path d="M18 12H6"></path></svg>
-                    </div>
-                    <h2 class="ml-4 text-2xl sm:text-3xl font-bold text-slate-300">Detailed Grading Rubric</h2>
-                </div>
-                
-                <!-- Report Section -->
-                <div class="mb-8">
-                    <h3 class="text-xl font-bold text-slate-100 mb-4 border-b-2 border-slate-400/50 pb-2">Report Evaluation (50 Points)</h3>
-                    <div class="space-y-4">
-                        <!-- Rubric Item -->
-                        <div class="bg-slate-800 p-4 rounded-lg border border-slate-700">
-                            <div class="flex flex-wrap justify-between items-center gap-2">
-                                <h4 class="font-semibold text-slate-100">Cover / Table of Contents</h4>
-                                <span class="font-bold text-lg text-slate-300">2 Points</span>
-                            </div>
-                            <div class="mt-4 grid md:grid-cols-3 gap-4 text-sm">
-                                <div class="bg-green-600/20 border border-green-500/30 p-3 rounded-lg"><p><strong class="font-semibold text-green-300">2P:</strong> Included and clearly stated.</p></div>
-                                <div class="bg-yellow-600/20 border border-yellow-500/30 p-3 rounded-lg"><p><strong class="font-semibold text-yellow-300">1P:</strong> Included but not clearly stated.</p></div>
-                                <div class="bg-red-600/20 border border-red-500/30 p-3 rounded-lg"><p><strong class="font-semibold text-red-300">0P:</strong> Not included.</p></div>
-                            </div>
-                        </div>
-                         <!-- Rubric Item -->
-                        <div class="bg-slate-800 p-4 rounded-lg border border-slate-700">
-                            <div class="flex flex-wrap justify-between items-center gap-2">
-                                <h4 class="font-semibold text-slate-100">Organization (Summary, Intro, Conclusion, Subheadings)</h4>
-                                <span class="font-bold text-lg text-slate-300">12 Points</span>
-                            </div>
-                            <p class="text-xs text-slate-400 mt-1">A well-structured report with clear sections is essential.</p>
-                        </div>
-                        <!-- Rubric Item -->
-                        <div class="bg-slate-800 p-4 rounded-lg border border-slate-700">
-                            <div class="flex flex-wrap justify-between items-center gap-2">
-                                <h4 class="font-semibold text-slate-100">Content / Development (Explanation & Visuals)</h4>
-                                <span class="font-bold text-lg text-slate-300">22 Points</span>
-                            </div>
-                            <p class="text-xs text-slate-400 mt-1">Content should be detailed, well-explained, and supported with visuals.</p>
-                        </div>
-                        <!-- Rubric Item -->
-                        <div class="bg-slate-800 p-4 rounded-lg border border-slate-700">
-                            <div class="flex flex-wrap justify-between items-center gap-2">
-                                <h4 class="font-semibold text-slate-100">Language and Expression</h4>
-                                <span class="font-bold text-lg text-slate-300">8 Points</span>
-                            </div>
-                            <p class="text-xs text-slate-400 mt-1">Advanced vocabulary and correct grammar are expected.</p>
-                        </div>
-                         <!-- Rubric Item -->
-                        <div class="bg-slate-800 p-4 rounded-lg border border-slate-700">
-                            <div class="flex flex-wrap justify-between items-center gap-2">
-                                <h4 class="font-semibold text-slate-100">Use of Sources (Count, Reliability, Format, Citations)</h4>
-                                <span class="font-bold text-lg text-slate-300">8 Points</span>
-                            </div>
-                             <p class="text-xs text-slate-400 mt-1">Proper use and citation of multiple reliable sources (APA/MLA).</p>
-                        </div>
-                    </div>
-                </div>
-
-                 <!-- Presentation Section -->
-                <div class="mb-8">
-                    <h3 class="text-xl font-bold text-slate-100 mb-4 border-b-2 border-slate-400/50 pb-2">Presentation Evaluation (25 Points)</h3>
-                     <div class="space-y-4">
-                        <!-- Rubric Item -->
-                        <div class="bg-slate-800 p-4 rounded-lg border border-slate-700">
-                            <div class="flex flex-wrap justify-between items-center gap-2">
-                                <h4 class="font-semibold text-slate-100">Planning, Order, and Conclusion</h4>
-                                <span class="font-bold text-lg text-slate-300">5 Points</span>
-                            </div>
-                             <p class="text-xs text-slate-400 mt-1">A well-structured presentation with a logical flow and strong summary.</p>
-                        </div>
-                        <!-- Rubric Item -->
-                        <div class="bg-slate-800 p-4 rounded-lg border border-slate-700">
-                             <div class="flex flex-wrap justify-between items-center gap-2">
-                                <h4 class="font-semibold text-slate-100">Content Knowledge & Details</h4>
-                                <span class="font-bold text-lg text-slate-300">4 Points</span>
-                            </div>
-                             <p class="text-xs text-slate-400 mt-1">Demonstrates a satisfying level of knowledge with details and explanations.</p>
-                        </div>
-                         <!-- Rubric Item -->
-                        <div class="bg-slate-800 p-4 rounded-lg border border-slate-700">
-                             <div class="flex flex-wrap justify-between items-center gap-2">
-                                <h4 class="font-semibold text-slate-100">Audience Communication & Engagement</h4>
-                                <span class="font-bold text-lg text-slate-300">4 Points</span>
-                            </div>
-                             <p class="text-xs text-slate-400 mt-1">Fluent speech, effective body language, and active audience participation.</p>
-                        </div>
-                         <!-- Rubric Item -->
-                        <div class="bg-slate-800 p-4 rounded-lg border border-slate-700">
-                             <div class="flex flex-wrap justify-between items-center gap-2">
-                                <h4 class="font-semibold text-slate-100">Visual Impact & Use of Technology/Sources</h4>
-                                <span class="font-bold text-lg text-slate-300">8 Points</span>
-                            </div>
-                             <p class="text-xs text-slate-400 mt-1">Original, impressive ideas supported by effective visuals and technology.</p>
-                        </div>
-                        <!-- Rubric Item -->
-                        <div class="bg-slate-800 p-4 rounded-lg border border-slate-700">
-                             <div class="flex flex-wrap justify-between items-center gap-2">
-                                <h4 class="font-semibold text-slate-100">Time Management & Expression Skills</h4>
-                                <span class="font-bold text-lg text-slate-300">4 Points</span>
-                            </div>
-                             <p class="text-xs text-slate-400 mt-1">Effective use of the allotted time with clear and engaging language.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Product Section -->
-                <div>
-                    <h3 class="text-xl font-bold text-slate-100 mb-4 border-b-2 border-slate-400/50 pb-2">Product Evaluation (25 Points)</h3>
-                     <div class="space-y-4">
-                        <!-- Rubric Item -->
-                        <div class="bg-slate-800 p-4 rounded-lg border border-slate-700">
-                             <div class="flex flex-wrap justify-between items-center gap-2">
-                                <h4 class="font-semibold text-slate-100">Relevance to Content</h4>
-                                <span class="font-bold text-lg text-slate-300">8 Points</span>
-                            </div>
-                             <p class="text-xs text-slate-400 mt-1">The product is fully compatible with and supportive of the project's content.</p>
-                        </div>
-                        <!-- Rubric Item -->
-                        <div class="bg-slate-800 p-4 rounded-lg border border-slate-700">
-                             <div class="flex flex-wrap justify-between items-center gap-2">
-                                <h4 class="font-semibold text-slate-100">Creativity and Originality</h4>
-                                <span class="font-bold text-lg text-slate-300">8 Points</span>
-                            </div>
-                             <p class="text-xs text-slate-400 mt-1">The product is unique and creative, with distinct features.</p>
-                        </div>
-                        <!-- Rubric Item -->
-                        <div class="bg-slate-800 p-4 rounded-lg border border-slate-700">
-                             <div class="flex flex-wrap justify-between items-center gap-2">
-                                <h4 class="font-semibold text-slate-100">Design, Layout & Interdisciplinary Work</h4>
-                                <span class="font-bold text-lg text-slate-300">6 Points</span>
-                            </div>
-                             <p class="text-xs text-slate-400 mt-1">The product is well-designed and shows support from other disciplines.</p>
-                        </div>
-                         <!-- Rubric Item -->
-                        <div class="bg-slate-800 p-4 rounded-lg border border-slate-700">
-                             <div class="flex flex-wrap justify-between items-center gap-2">
-                                <h4 class="font-semibold text-slate-100">Applicability / Wider Impact</h4>
-                                <span class="font-bold text-lg text-slate-300">3 Points</span>
-                            </div>
-                             <p class="text-xs text-slate-400 mt-1">The product offers a creative and applicable solution to a problem.</p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Rules & Grading Card -->
-            <section id="rules" class="fade-in-section p-8 bg-slate-800 rounded-2xl shadow-lg border border-slate-700">
-                <div class="flex items-center mb-6">
-                    <div class="flex-shrink-0 w-12 h-12 rounded-full bg-slate-500 flex items-center justify-center shadow-lg">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white"><gavel class="lucide lucide-gavel"></gavel><path d="m14 12-8.5 8.5"></path><path d="m17.5 15.5 2.5 2.5"></path><path d="m12 15 6 6"></path></svg>
-                    </div>
-                    <h2 class="ml-4 text-2xl sm:text-3xl font-bold text-slate-300">Project Rules & Grading</h2>
-                </div>
-                <div class="grid md:grid-cols-2 gap-8 text-slate-400">
-                    <div>
-                        <h3 class="font-semibold text-lg text-slate-100 mb-3">General Rules</h3>
-                        <ul class="space-y-3 list-disc list-inside">
-                            <li>No plagiarism! You must reference all sources.</li>
-                            <li>Stick to the check days and the deadline (5 check-ins required).</li>
-                            <li>Be ready to present your work orally in class.</li>
-                            <li>All work must be your own product without outside help.</li>
-                            <li>Papers must be presentable, tidy, and well-written (Calibri, 11pt if typed). Submit in a file with your name, number, and class.</li>
-                            <li>Presentations may be supported by a sketch, PowerPoint, or iMovie.</li>
-                        </ul>
-                    </div>
-                    <div class="bg-slate-800/50 p-6 rounded-lg border border-slate-700">
-                        <h3 class="font-semibold text-lg text-slate-100 mb-3">Grading Breakdown</h3>
-                        <ul class="space-y-3 list-disc list-inside">
-                           <li><span class="font-semibold text-slate-300">Report:</span> 50%</li>
-                           <li><span class="font-semibold text-slate-300">Product:</span> 25%</li>
-                           <li><span class="font-semibold text-slate-300">Presentation:</span> 25%</li>
-                        </ul>
-                    </div>
-                </div>
-            </section>
-
-        </main>
+    <!-- TIMELINE NAV -->
+    <div class="timeline-nav" id="timelineNav">
+      <button class="timeline-btn active" onclick="switchWeek(5)"><span class="pill-week">Week 5</span> Check 1: Choose a Learning Goal</button>
+      <button class="timeline-btn" onclick="switchWeek(7)"><span class="pill-week">Week 7</span> Check 2: Research Games</button>
+      <button class="timeline-btn" onclick="switchWeek(11)"><span class="pill-week">Week 11</span> Check 3: Plan and Prototype</button>
+      <button class="timeline-btn" onclick="switchWeek(18)"><span class="pill-week">Week 18</span> Check 4: First Draft and Test</button>
+      <button class="timeline-btn" onclick="switchWeek(23)"><span class="pill-week">Week 23</span> Check 5: Improve Your Game</button>
+      <button class="timeline-btn" onclick="switchWeek(29)"><span class="pill-week">Week 29 • 30 April</span> Final Hand-in</button>
+      <button class="timeline-btn" onclick="switchWeek(32)"><span class="pill-week">Weeks 32–34</span> Presentation</button>
     </div>
 
-    <script>
-        // --- INTERACTIVE CHECKLISTS ---
-        function toggleCheckbox(element) {
-            element.classList.toggle('completed');
-            const icon = element.querySelector('.checklist-icon');
-            const checkmark = element.querySelector('svg');
-            
-            if (element.classList.contains('completed')) {
-                icon.classList.remove('border-slate-500', 'bg-slate-700');
-                icon.classList.add('border-transparent', 'bg-current');
-                checkmark.style.opacity = '1';
-            } else {
-                icon.classList.add('border-slate-500', 'bg-slate-700');
-                icon.classList.remove('border-transparent', 'bg-current');
-                checkmark.style.opacity = '0';
-            }
-        }
+    <!-- DYNAMIC CHECKPOINT DISPLAY -->
+    <div id="checkpointContainer"></div>
 
-        // --- SCROLL-BASED FADE-IN ANIMATIONS ---
-        const sections = document.querySelectorAll('.fade-in-section');
+    <p style="color:var(--slate-600);font-size:0.9rem">Ticks are saved automatically in this browser on this device. They do not send work to your teacher. Clearing browser data removes your saved ticks.</p>
+    <!-- ACTION & PROGRESS BAR -->
+    <div class="action-bar">
+      <div class="progress-track">
+        <span>Overall Progress:</span>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="progressFill"></div>
+        </div>
+        <span id="progressText">0%</span>
+      </div>
+      <div>
+        <button class="btn-secondary" onclick="window.print()">🖨️ Print This Step</button>
+        <button class="btn-secondary" onclick="resetChecklist()">🔄 Reset Progress</button>
+      </div>
+    </div>
 
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('is-visible');
-                }
-            });
-        }, {
-            threshold: 0.1
-        });
+<section class="spec-box" style="margin-top:36px"><h3>📊 What Good Work Looks Like</h3><div class="research-grid">
+<div><h4>Report — 50%</h4><p>A clear learning difficulty and aim; useful research into existing games; reasons for your own choices; clear rules; honest testing notes; a logical structure; and accurate source credits.</p></div>
+<div><h4>Game — 25%</h4><p>A playable, original game with accurate tasks, complete materials, clear rules, and suitable answer support. The game gives its target players meaningful chances to practise language.</p></div>
+<div><h4>Presentation — 25%</h4><p>A clear 5–10 minute explanation and brief demonstration, useful visuals, short speaking notes, and answers showing that you understand the learning goal and design.</p></div>
+</div></section>
 
-        sections.forEach(section => {
-            observer.observe(section);
-        });
-        
-        // --- SCROLL PROGRESS BAR ---
-        const progressBar = document.getElementById('progressBar');
-        
-        function updateProgressBar() {
-            const { scrollTop, scrollHeight } = document.documentElement;
-            const scrollPercent = (scrollTop / (scrollHeight - window.innerHeight)) * 100 + '%';
-            progressBar.style.width = scrollPercent;
-        }
+  </main>
 
-        document.addEventListener('scroll', updateProgressBar);
-    </script>
+  <script>
+    const checkpoints = [
+      {
+            "week": 5,
+            "title": "Choose Your Learning Goal",
+            "meetingType": "Check 1 • Week 5",
+            "desc": "Choose a language-learning difficulty and the players your game will support.",
+            "target": "One learning difficulty, a clear practice goal, and a target age group and level.",
+            "questions": [
+                  "What do learners find difficult?",
+                  "Who will play your game?",
+                  "What should they practise while playing?"
+            ],
+            "before": [
+                  "Read the project requirements and assessment targets.",
+                  "List possible learning difficulties, such as remembering words or forming questions. Choose one.",
+                  "Write a short paragraph naming your players, their age and English level, and what your game will help them practise."
+            ],
+            "during": [
+                  "Explain the learning difficulty and why it matters to your players.",
+                  "Discuss a simple game idea and how it could lead to language practice.",
+                  "Agree on your learning focus and confirm Check 2 in Week 7."
+            ],
+            "assignment": [
+                  "Research existing games. Start with 2–3 examples as a useful target.",
+                  "Note how each game works, why it is enjoyable, and how it could support language learning.",
+                  "Save source details and begin listing ideas you could change for your own game."
+            ]
+      },
+      {
+            "week": 7,
+            "title": "Research Games and Develop Your Idea",
+            "meetingType": "Check 2 • Week 7",
+            "desc": "Use research to design a game that has its own learning purpose.",
+            "target": "A comparison of existing games, source notes, and an outline of your own game.",
+            "questions": [
+                  "What did you learn from the games you researched?",
+                  "What will you borrow, and what will you change?",
+                  "How will every player get a chance to use English?"
+            ],
+            "before": [
+                  "Bring notes comparing the games you researched and their source details.",
+                  "Prepare an outline: learning aim, players, materials, steps of a turn, and ending.",
+                  "Explain which ideas inspired you and how your game will be different."
+            ],
+            "during": [
+                  "Review your research and the links to your learning goal.",
+                  "Check that your changes go beyond the game name, colours, or decoration.",
+                  "Discuss how answers will be checked and confirm Check 3 in Week 11."
+            ],
+            "assignment": [
+                  "Draw the board or digital layout and write the first rule sheet.",
+                  "Make sample task cards and an answer key or open-answer checking guide.",
+                  "Build a simple prototype and prepare a report outline and work schedule."
+            ]
+      },
+      {
+            "week": 11,
+            "title": "Plan Your Game and Make a Prototype",
+            "meetingType": "Check 3 • Week 11",
+            "desc": "Check how the game works before writing and building the final version.",
+            "target": "A playable early version, draft rules, sample tasks, and a report outline.",
+            "questions": [
+                  "Can a player follow a complete turn?",
+                  "Do the tasks match the players’ age, level, and learning goal?",
+                  "How will players check answers and learn from mistakes?"
+            ],
+            "before": [
+                  "Bring the prototype: board or layout, sample cards, pieces, and answer support.",
+                  "Bring draft rules covering set-up, turns, scoring, help, ending, and ties.",
+                  "Bring your report outline, source list, and schedule for testing and improving the game."
+            ],
+            "during": [
+                  "Show a sample turn and explain where the language practice happens.",
+                  "Review task accuracy, fairness, and the answer-checking system.",
+                  "Agree on how to test the game and confirm Check 4 in Week 18."
+            ],
+            "assignment": [
+                  "Write a complete first report draft, including research, design choices, and rules.",
+                  "Test the prototype yourself and, if allowed, with suitable players. Record what happened without inventing results.",
+                  "Note problems and improvements. Bring your test notes and first draft to Check 4."
+            ]
+      },
+      {
+            "week": 18,
+            "title": "Share Your First Draft and Test Results",
+            "meetingType": "Check 4 • Week 18",
+            "desc": "Use feedback and test evidence to improve the report, rules, and game.",
+            "target": "A complete first draft, test notes, and a clear list of improvements.",
+            "questions": [
+                  "Which rules or tasks caused confusion?",
+                  "What language did players actually practise?",
+                  "What should change, and why?"
+            ],
+            "before": [
+                  "Bring the full first draft, rule sheet, source list, and prototype.",
+                  "Bring dated test notes showing the test conditions, observations, and problems. If testing is unfinished, say so.",
+                  "Use the Academic Honesty checklist and mark 2–3 parts where you want feedback."
+            ],
+            "during": [
+                  "Discuss your observations and distinguish evidence from claims you cannot yet support.",
+                  "Check the report, rule clarity, task accuracy, and source credits.",
+                  "List the changes to make and confirm Check 5 in Week 23."
+            ],
+            "assignment": [
+                  "Improve your report, task cards, answer support, and rules using feedback.",
+                  "Test the changes and record whether they solve the problems you noticed.",
+                  "Plan a 5–10 minute talk with a short example turn. Bring your second draft and improved game to Check 5."
+            ]
+      },
+      {
+            "week": 23,
+            "title": "Improve Your Game and Plan Your Talk",
+            "meetingType": "Check 5 • Week 23",
+            "desc": "Check the improved game and prepare to finish all parts.",
+            "target": "An improved report, a nearly finished playable game, and a presentation outline.",
+            "questions": [
+                  "What changed after testing and feedback?",
+                  "Can players use the rules without constant help?",
+                  "How will you demonstrate the learning goal in a short example turn?"
+            ],
+            "before": [
+                  "Bring your second draft and mark the changes you made.",
+                  "Bring the improved game, complete rules, and answer support.",
+                  "Prepare a talk outline: learning difficulty, research, game design, example turn, testing, and conclusion."
+            ],
+            "during": [
+                  "Review the improvements and check whether the game is ready for its target players.",
+                  "Review your talk outline and keep the example turn short enough for the time limit.",
+                  "Confirm hand-in on 30 April (Week 29), the presentation date in Weeks 32–34, and any equipment needed."
+            ],
+            "assignment": [
+                  "Finish and proofread the report, rules, and source list.",
+                  "Finish all game materials. Test digital files and check that no pieces or cards are missing.",
+                  "Prepare your report and game for 30 April (Week 29)."
+            ]
+      },
+      {
+            "week": 29,
+            "title": "Hand In Your Report and Game",
+            "meetingType": "Final Hand-in • Week 29 • 30 April",
+            "desc": "Submit your finished report and complete game on 30 April (Week 29).",
+            "target": "A finished report and playable game with rules and answer support.",
+            "questions": [
+                  "Are the learning goal, players, and rules clear?",
+                  "Is the game complete and usable?",
+                  "Have you credited sources and described testing honestly?"
+            ],
+            "before": [
+                  "Check the report has your name, all required sections, and a source list.",
+                  "Check the board, cards, pieces, rules, and answer support. Test any digital version.",
+                  "Save backup copies and organise physical materials so nothing gets lost."
+            ],
+            "during": [
+                  "Hand in the report and game in the format agreed with your teacher.",
+                  "Confirm the presentation date in Weeks 32–34 and the equipment you need.",
+                  "Agree on when to share slides or digital materials before your talk."
+            ],
+            "assignment": [
+                  "Practise your explanation and demonstration together. Keep the total between 5 and 10 minutes.",
+                  "Use short notes. Prepare to explain why the tasks support your learning goal.",
+                  "Share materials by the agreed date and bring backups or spare pieces where useful."
+            ]
+      },
+      {
+            "week": 32,
+            "title": "Present and Demonstrate Your Game",
+            "meetingType": "Presentation • Weeks 32–34",
+            "desc": "Explain your design process and show how a short turn works.",
+            "target": "A clear 5–10 minute presentation, including a brief demonstration and answers to questions.",
+            "questions": [
+                  "Can you explain why you chose this learning goal?",
+                  "Does the example turn show meaningful language practice?",
+                  "Can you explain what testing showed and what still needs improvement?"
+            ],
+            "before": [
+                  "Practise the talk and short example turn within 5–10 minutes in total.",
+                  "Prepare the board, cards, answer support, and any digital materials.",
+                  "Plan what you will say if a player gives an unexpected answer during the demonstration."
+            ],
+            "during": [
+                  "Explain your players, learning aim, research, and original design choices.",
+                  "Demonstrate a short turn and show how players check answers or get help.",
+                  "Explain testing and improvements, give your conclusion, and answer questions."
+            ],
+            "assignment": [
+                  "Write a short reflection: what worked, what was difficult, and one improvement you would make next.",
+                  "Read or discuss your feedback. Choose one goal for your next project."
+            ]
+      }
+];
+
+    let currentWeek = 5;
+
+    function renderCheckpoint(weekNum) {
+      const data = checkpoints.find(c => c.week === weekNum);
+      if (!data) return;
+
+      const container = document.getElementById("checkpointContainer");
+      container.innerHTML = `
+        <div class="checkpoint-card">
+          <div class="checkpoint-header">
+            <div class="checkpoint-title-grp">
+              <h2>
+                <span>${data.title}</span>
+                <span class="meeting-badge">${data.meetingType}</span>
+              </h2>
+              <p>${data.desc}</p>
+              <p><strong>Target for this step:</strong> ${data.target}</p>
+            </div>
+          </div>
+
+          <div class="questions-box">
+            <h4>🎯 Questions to Help You</h4>
+            <ul>
+              ${data.questions.map(q => `<li>${q}</li>`).join("")}
+            </ul>
+          </div>
+
+          <div class="workflow-grid">
+            <!-- BEFORE -->
+            <div class="action-col col-before">
+              <div class="col-title">
+                <span>🎒 Get Ready</span>
+                <small>Bring or prepare</small>
+              </div>
+              <ul class="action-list">
+                ${data.before.map((task, idx) => `
+                  <li class="action-item">
+                    <input type="checkbox" id="chk_${data.week}_b_${idx}" onchange="saveProgress()" />
+                    <label for="chk_${data.week}_b_${idx}">${task}</label>
+                  </li>
+                `).join("")}
+              </ul>
+            </div>
+
+            <!-- DURING -->
+            <div class="action-col col-during">
+              <div class="col-title">
+                <span>🤝 At This Step</span>
+                <small>Check together</small>
+              </div>
+              <ul class="action-list">
+                ${data.during.map((task, idx) => `
+                  <li class="action-item">
+                    <input type="checkbox" id="chk_${data.week}_d_${idx}" onchange="saveProgress()" />
+                    <label for="chk_${data.week}_d_${idx}">${task}</label>
+                  </li>
+                `).join("")}
+              </ul>
+            </div>
+
+            <!-- ASSIGNMENT -->
+            <div class="action-col col-next">
+              <div class="col-title">
+                <span>📝 Finish Next</span>
+                <small>Next target</small>
+              </div>
+              <ul class="action-list">
+                ${data.assignment.map((task, idx) => `
+                  <li class="action-item">
+                    <input type="checkbox" id="chk_${data.week}_a_${idx}" onchange="saveProgress()" />
+                    <label for="chk_${data.week}_a_${idx}">${task}</label>
+                  </li>
+                `).join("")}
+              </ul>
+            </div>
+          </div>
+        </div>
+      `;
+
+      loadProgress();
+      updateProgressBar();
+    }
+
+    function switchWeek(weekNum) {
+      currentWeek = weekNum;
+      document.querySelectorAll(".timeline-btn").forEach(btn => {
+        btn.classList.toggle("active", btn.getAttribute("onclick").includes(weekNum));
+      });
+      renderCheckpoint(weekNum);
+    }
+
+    function readProgress() {
+      try {
+        const saved = JSON.parse(localStorage.getItem("board_game_progress_v1") || "{}");
+        return saved && typeof saved === "object" && !Array.isArray(saved) ? saved : {};
+      } catch (_) { return {}; }
+    }
+
+    function saveProgress() {
+      const state = readProgress();
+      document.querySelectorAll("input[type='checkbox']").forEach(box => {
+        state[box.id] = box.checked;
+      });
+      try { localStorage.setItem("board_game_progress_v1", JSON.stringify(state)); } catch (_) {}
+      updateProgressBar();
+    }
+
+    function loadProgress() {
+      const saved = readProgress();
+      document.querySelectorAll("input[type='checkbox']").forEach(box => {
+        box.checked = saved[box.id] === true;
+      });
+    }
+
+    function updateProgressBar() {
+      const saved = readProgress();
+      let totalTasks = 0;
+      checkpoints.forEach(cp => {
+        totalTasks += cp.before.length + cp.during.length + cp.assignment.length;
+      });
+
+      const checkedCount = checkpoints.reduce((count, cp) => count +
+        [['b', cp.before], ['d', cp.during], ['a', cp.assignment]].reduce((sum, [key, tasks]) =>
+          sum + tasks.filter((_, idx) => saved[`chk_${cp.week}_${key}_${idx}`] === true).length, 0), 0);
+      const percentage = Math.min(100, Math.round((checkedCount / totalTasks) * 100));
+
+      const fill = document.getElementById("progressFill");
+      const text = document.getElementById("progressText");
+      if (fill && text) {
+        fill.style.width = percentage + "%";
+        text.innerText = percentage + "% completed";
+      }
+    }
+
+    function resetChecklist() {
+      if (confirm("Reset all ticks in every step?")) {
+        try { localStorage.removeItem("board_game_progress_v1"); } catch (_) {}
+        loadProgress();
+        updateProgressBar();
+      }
+    }
+
+    let printDetails = [];
+    window.addEventListener('beforeprint', () => {
+      printDetails = Array.from(document.querySelectorAll('details')).map(el => [el, el.open]);
+      printDetails.forEach(([el]) => { el.open = true; });
+    });
+    window.addEventListener('afterprint', () => {
+      printDetails.forEach(([el, wasOpen]) => { el.open = wasOpen; });
+    });
+
+    // Initial render
+    document.addEventListener("DOMContentLoaded", () => {
+      renderCheckpoint(5);
+    });
+  </script>
 </body>
 </html>
+
+
 
